@@ -2,14 +2,19 @@ import os
 import json
 from groq import Groq
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+def _get_client():
+    return Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def risk_predictor(tasks):
     """Predict project risks based on task status using AI."""
-    # Convert Task objects to dicts
-    task_list = [{"title": t.title, "priority": t.priority,
-                  "status": t.status, "dueDate": t.dueDate} for t in tasks]
+    # Convert Task objects to dicts if needed
+    if tasks and hasattr(tasks[0], 'title'):
+        task_list = [{"title": t.title, "priority": t.priority,
+                      "status": t.status, "dueDate": t.dueDate} for t in tasks]
+    else:
+        task_list = tasks
 
     pending_tasks = [t for t in task_list if t["status"] != "done"]
     in_progress = [t for t in task_list if t["status"] == "inProgress"]
@@ -43,6 +48,7 @@ Provide a JSON response with:
 """
 
     try:
+        client = _get_client()
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
@@ -54,13 +60,4 @@ Provide a JSON response with:
         result = json.loads(completion.choices[0].message.content)
         return result
     except Exception as e:
-        # Fallback to basic analysis
-        return {
-            "risk_level": "HIGH" if len(pending_tasks) > 5 else "MEDIUM" if len(pending_tasks) > 2 else "LOW",
-            "confidence": 0.7,
-            "risky_tasks": [t["title"] for t in high_priority],
-            "bottlenecks": ["Unable to perform AI analysis"],
-            "recommendations": ["Review pending tasks", "Prioritize high-priority items"],
-            "deadline_risks": f"{len(pending_tasks)} tasks pending completion",
-            "error": str(e)
-        }
+        raise RuntimeError(f"Risk analysis failed: {e}")

@@ -4,6 +4,7 @@ import {
   getWorkspaces,
   createWorkspace,
   addWorkspaceMember,
+  removeWorkspaceMember,
   deleteWorkspace,
 } from "../api/workspace.api";
 import { getUsers } from "../api/user.api";
@@ -46,6 +47,15 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   };
 
+  const refreshWorkspaces = async (workspaceId) => {
+    const res = await getWorkspaces();
+    setWorkspaces(res.data);
+    if (workspaceId) {
+      const updated = res.data.find((w) => w._id === workspaceId) || null;
+      setSelectedWorkspace(updated);
+    }
+  };
+
   const handleCreateWorkspace = async (e) => {
     e.preventDefault();
     if (!workspaceName.trim()) return;
@@ -82,9 +92,27 @@ export default function Dashboard() {
     try {
       await addWorkspaceMember(selectedWorkspace._id, userId);
       alert("Member added successfully!");
-      loadWorkspaces();
+      await refreshWorkspaces(selectedWorkspace._id);
     } catch (error) {
       alert(error.response?.data?.message || "Failed to add member");
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberId) => {
+    if (!selectedWorkspace) return;
+
+    if (!window.confirm("Remove this member from the workspace?")) {
+      return;
+    }
+
+    setAdding(true);
+    try {
+      await removeWorkspaceMember(selectedWorkspace._id, memberId);
+      await refreshWorkspaces(selectedWorkspace._id);
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to remove member");
     } finally {
       setAdding(false);
     }
@@ -129,6 +157,9 @@ export default function Dashboard() {
 
     return matchesSearch;
   });
+
+  const workspaceMembers = selectedWorkspace?.members || [];
+  const isOwner = selectedWorkspace?.owner?._id === currentUserId;
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -238,13 +269,13 @@ export default function Dashboard() {
                 className="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 overflow-hidden"
               >
                 <div
-                  className="p-6 cursor-pointer"
+                  className="p-5 cursor-pointer"
                   onClick={() => navigate(`/project/${w._id}`)}
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                       <svg
-                        className="w-6 h-6 text-white"
+                        className="w-5 h-5 text-white"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -271,40 +302,42 @@ export default function Dashboard() {
                       />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
                     {w.name}
                   </h3>
-                  <p className="text-gray-600 text-sm">
-                    Click to open workspace
+                  <p className="text-gray-500 text-xs">
+                    {w.members?.length || 1} member
+                    {(w.members?.length || 1) > 1 ? "s" : ""}
                   </p>
                 </div>
-                <div className="px-6 pb-4 space-y-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openMembersModal(w);
-                    }}
-                    className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                {w.owner?._id === currentUserId && (
+                  <div className="px-5 pb-4 flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openMembersModal(w);
+                      }}
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-1.5 px-3 rounded-lg transition-colors flex items-center justify-center space-x-1 text-sm"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                    <span>Add Members</span>
-                  </button>
-                  {w.owner?._id === currentUserId && (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                      <span>Members</span>
+                    </button>
                     <button
                       onClick={(e) => handleDeleteWorkspace(w._id, e)}
-                      className="w-full bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+                      className="bg-red-100 hover:bg-red-200 text-red-700 font-medium py-1.5 px-3 rounded-lg transition-colors flex items-center justify-center text-sm"
+                      title="Delete Workspace"
                     >
                       <svg
                         className="w-4 h-4"
@@ -319,10 +352,9 @@ export default function Dashboard() {
                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                         />
                       </svg>
-                      <span>Delete Workspace</span>
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
                 <div className="h-1 bg-linear-to-r from-blue-500 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
               </div>
             ))}
@@ -432,7 +464,54 @@ export default function Dashboard() {
               />
             </div>
 
-            <div className="p-8 overflow-y-auto max-h-96">
+            <div className="p-8 overflow-y-auto max-h-96 space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                  Current Members
+                </h3>
+                {workspaceMembers.length === 0 ? (
+                  <p className="text-sm text-gray-500">No members found.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {workspaceMembers.map((member) => (
+                      <div
+                        key={member._id}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
+                            {member.name?.charAt(0).toUpperCase() || "U"}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">
+                              {member.name}
+                              {selectedWorkspace?.owner?._id === member._id && (
+                                <span className="ml-2 text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                                  Owner
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {member.email}
+                            </p>
+                          </div>
+                        </div>
+                        {isOwner &&
+                          member._id !== selectedWorkspace?.owner?._id && (
+                            <button
+                              onClick={() => handleRemoveMember(member._id)}
+                              disabled={adding}
+                              className="text-red-600 hover:text-red-700 font-semibold px-3 py-2 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              Remove
+                            </button>
+                          )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {filteredUsers.length === 0 ? (
                 <div className="text-center py-8">
                   <svg

@@ -1,8 +1,15 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.schemas import TaskList
-from app.services.llm import prioritize_tasks
-from app.graph import run_graph
+import os
+from dotenv import load_dotenv
+
+# Load .env BEFORE any app imports that use env vars
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
+
+from fastapi import FastAPI  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from app.schemas import TaskList  # noqa: E402
+from app.services.llm import prioritize_tasks  # noqa: E402
+from app.graph import run_graph  # noqa: E402
+
 
 app = FastAPI(title="AI Collaboration Service (Groq)")
 

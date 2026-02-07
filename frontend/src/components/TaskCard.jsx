@@ -9,6 +9,7 @@ export default function TaskCard({ task }) {
     low: "bg-blue-100 text-blue-800 border-blue-200",
     medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
     high: "bg-red-100 text-red-800 border-red-200",
+    unassigned: "bg-gray-100 text-gray-700 border-gray-200",
   };
 
   const statuses = [
@@ -81,15 +82,15 @@ export default function TaskCard({ task }) {
 
       <div className="flex items-center justify-between">
         <span
-          className={`text-xs font-semibold px-3 py-1 rounded-full border ${priorityColors[task.priority] || priorityColors.medium}`}
+          className={`text-xs font-semibold px-3 py-1 rounded-full border ${priorityColors[task.priority || "unassigned"]}`}
         >
-          {task.priority || "medium"}
+          {task.priority || "unassigned"}
         </span>
       </div>
 
       {/* Status Change Menu */}
       {showMenu && (
-        <div className="absolute right-2 top-12 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-10 min-w-37.5">
+        <div className="absolute right-2 top-12 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-20 min-w-40">
           <div className="px-3 py-1 text-xs font-semibold text-gray-500 border-b border-gray-200">
             Move to:
           </div>

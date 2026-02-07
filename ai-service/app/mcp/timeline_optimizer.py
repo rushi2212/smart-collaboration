@@ -3,14 +3,19 @@ import json
 from groq import Groq
 from datetime import datetime
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+def _get_client():
+    return Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def timeline_optimizer(tasks):
     """Optimize task timeline based on deadlines and dependencies using AI."""
-    # Convert Task objects to dicts
-    task_list = [{"title": t.title, "priority": t.priority,
-                  "status": t.status, "dueDate": t.dueDate} for t in tasks]
+    # Convert Task objects to dicts if needed
+    if tasks and hasattr(tasks[0], 'title'):
+        task_list = [{"title": t.title, "priority": t.priority,
+                      "status": t.status, "dueDate": t.dueDate} for t in tasks]
+    else:
+        task_list = tasks
 
     prompt = f"""
 You are an AI Timeline Optimizer for project management.
@@ -38,6 +43,7 @@ Focus on:
 """
 
     try:
+        client = _get_client()
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
@@ -49,17 +55,4 @@ Focus on:
         result = json.loads(completion.choices[0].message.content)
         return result
     except Exception as e:
-        # Fallback to basic suggestions
-        return {
-            "parallel_tasks": ["Tasks can be parallelized for efficiency"],
-            "sequential_tasks": ["High priority tasks should be completed first"],
-            "quick_wins": [t["title"] for t in task_list if t["priority"] == "low"][:2],
-            "time_saving_suggestions": [
-                "Split large tasks into smaller subtasks",
-                "Parallelize independent work streams",
-                "Focus on near-deadline items first"
-            ],
-            "estimated_completion": "Pending AI analysis",
-            "optimized": False,
-            "error": str(e)
-        }
+        raise RuntimeError(f"Timeline optimization failed: {e}")

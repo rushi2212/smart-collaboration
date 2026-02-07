@@ -2,14 +2,19 @@ import os
 import json
 from groq import Groq
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+def _get_client():
+    return Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def workload_allocator(tasks, team=None):
     """Allocate workload across team members using AI."""
-    # Convert Task objects to dicts
-    task_list = [{"title": t.title, "priority": t.priority,
-                  "status": t.status, "dueDate": t.dueDate} for t in tasks]
+    # Convert Task objects to dicts if needed
+    if tasks and hasattr(tasks[0], 'title'):
+        task_list = [{"title": t.title, "priority": t.priority,
+                      "status": t.status, "dueDate": t.dueDate} for t in tasks]
+    else:
+        task_list = tasks
 
     pending_tasks = [t for t in task_list if t["status"] != "done"]
 
@@ -41,6 +46,7 @@ Consider:
 """
 
     try:
+        client = _get_client()
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
@@ -52,16 +58,4 @@ Consider:
         result = json.loads(completion.choices[0].message.content)
         return result
     except Exception as e:
-        # Fallback to basic allocation
-        return {
-            "workload_balance": "UNKNOWN",
-            "distribution_strategy": "Distribute tasks evenly across team members",
-            "task_grouping": [],
-            "recommendations": [
-                "Assign high-priority tasks to experienced members",
-                "Balance workload to prevent burnout",
-                "Group related tasks together"
-            ],
-            "warning_flags": ["AI analysis unavailable"],
-            "error": str(e)
-        }
+        raise RuntimeError(f"Workload allocation failed: {e}")

@@ -5,6 +5,7 @@ let io;
 // Track active meetings and participants
 const activeMeetings = new Map(); // meetingId -> Set of socket.id
 const socketToUser = new Map(); // socket.id -> { userId, userName, meetingId }
+const meetingRooms = new Map(); // roomId -> Map of socket.id -> { name }
 
 export const initSocket = (server) => {
   io = new Server(server, {
@@ -24,6 +25,62 @@ export const initSocket = (server) => {
 
     socket.on("sendMessage", ({ roomId, message }) => {
       socket.to(roomId).emit("receiveMessage", message);
+    });
+
+    // ==================== WebRTC Room Signaling (test-webrtc) ====================
+
+    socket.on("room:join", ({ roomId, name }) => {
+      if (!roomId || !name) {
+        socket.emit("room:error", { message: "Missing room or name." });
+        return;
+      }
+
+      socket.data.meetingRoomId = roomId;
+      socket.data.meetingName = name;
+
+      const room = ensureMeetingRoom(roomId);
+      room.set(socket.id, { name });
+
+      socket.join(roomId);
+
+      const peers = Array.from(room.entries())
+        .filter(([peerId]) => peerId !== socket.id)
+        .map(([peerId, data]) => ({ id: peerId, name: data.name }));
+
+      socket.emit("room:peers", { peers });
+      socket.to(roomId).emit("peer:joined", { peerId: socket.id, name });
+    });
+
+    socket.on("room:leave", () => {
+      removeFromMeetingRoom(socket);
+    });
+
+    socket.on("webrtc:offer", ({ to, sdp }) => {
+      if (!to || !sdp) return;
+      io.to(to).emit("webrtc:offer", { from: socket.id, sdp });
+    });
+
+    socket.on("webrtc:answer", ({ to, sdp }) => {
+      if (!to || !sdp) return;
+      io.to(to).emit("webrtc:answer", { from: socket.id, sdp });
+    });
+
+    socket.on("webrtc:ice", ({ to, candidate }) => {
+      if (!to || !candidate) return;
+      io.to(to).emit("webrtc:ice", { from: socket.id, candidate });
+    });
+
+    socket.on("chat:message", ({ text }) => {
+      const roomId = socket.data.meetingRoomId;
+      const name = socket.data.meetingName;
+      if (!roomId || !name || !text) return;
+
+      io.to(roomId).emit("chat:message", {
+        senderId: socket.id,
+        name,
+        text,
+        timestamp: Date.now(),
+      });
     });
 
     // ==================== WebRTC Meeting Signaling ====================
@@ -153,6 +210,7 @@ export const initSocket = (server) => {
      */
     socket.on("disconnect", () => {
       console.log("🔴 User disconnected:", socket.id);
+      removeFromMeetingRoom(socket);
       handleUserLeaveMeeting(socket);
     });
   });
@@ -196,3 +254,30 @@ function handleUserLeaveMeeting(socket) {
 }
 
 export const getIO = () => io;
+
+function ensureMeetingRoom(roomId) {
+  if (!meetingRooms.has(roomId)) {
+    meetingRooms.set(roomId, new Map());
+  }
+  return meetingRooms.get(roomId);
+}
+
+function removeFromMeetingRoom(socket) {
+  const roomId = socket.data.meetingRoomId;
+  if (!roomId) return;
+
+  const room = meetingRooms.get(roomId);
+  if (!room) return;
+
+  room.delete(socket.id);
+  socket.leave(roomId);
+
+  socket.to(roomId).emit("peer:left", { peerId: socket.id });
+
+  if (room.size === 0) {
+    meetingRooms.delete(roomId);
+  }
+
+  socket.data.meetingRoomId = undefined;
+  socket.data.meetingName = undefined;
+}

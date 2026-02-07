@@ -30,11 +30,21 @@ export const getProjectTasks = async (req, res) => {
 
 export const updateTaskStatus = async (req, res) => {
   try {
-    const task = await Task.findByIdAndUpdate(
-      req.params.id,
-      { status: req.body.status },
-      { new: true },
-    );
+    const updates = {};
+    if (req.body.status) {
+      updates.status = req.body.status;
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body, "priority")) {
+      updates.priority = req.body.priority;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: "No updates provided" });
+    }
+
+    const task = await Task.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+    });
 
     if (!task) {
       return res.status(404).json({ message: "Task not found" });

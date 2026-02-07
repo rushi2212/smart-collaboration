@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getCurrentUser } from "../api/user.api";
 
 export default function Navbar() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isOnDashboard = location.pathname === "/dashboard";
   const [userName, setUserName] = useState(() => {
     return localStorage.getItem("userName") || "User";
   });
@@ -33,7 +37,10 @@ export default function Navbar() {
     <nav className="bg-white shadow-lg border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-3">
+          <div
+            className="flex items-center space-x-3 cursor-pointer"
+            onClick={() => navigate("/dashboard")}
+          >
             <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
               <svg
                 className="w-6 h-6 text-white"
@@ -53,6 +60,27 @@ export default function Navbar() {
               Smart Collaboration
             </h1>
           </div>
+          {!isOnDashboard && (
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-1.5 ml-4 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Dashboard
+            </button>
+          )}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 bg-gray-100 px-4 py-2 rounded-lg">
               <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">

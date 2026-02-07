@@ -7,4 +7,7 @@ export const createTask = (data) => api.post("/tasks", data);
 export const updateTaskStatus = (id, status) =>
   api.patch(`/tasks/${id}`, { status });
 
+export const updateTaskPriority = (id, priority) =>
+  api.patch(`/tasks/${id}`, { priority });
+
 export const deleteTask = (id) => api.delete(`/tasks/${id}`);

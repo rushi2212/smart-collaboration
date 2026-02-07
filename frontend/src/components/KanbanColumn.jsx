@@ -9,7 +9,7 @@ export default function KanbanColumn({ title, tasks, onMove }) {
 
   return (
     <div className="flex-1 min-w-75">
-      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible">
         <div
           className={`bg-linear-to-r ${statusColors[title] || "from-gray-500 to-gray-600"} px-4 py-3`}
         >

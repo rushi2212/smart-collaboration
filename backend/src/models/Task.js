@@ -12,7 +12,6 @@ const taskSchema = new mongoose.Schema(
     priority: {
       type: String,
       enum: ["low", "medium", "high"],
-      default: "medium",
     },
     projectId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -24,7 +23,7 @@ const taskSchema = new mongoose.Schema(
     },
     dueDate: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("Task", taskSchema);

@@ -2,13 +2,20 @@ import os
 import json
 from groq import Groq
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+def _get_client():
+    return Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def prioritize_tasks(tasks):
     # Convert Task objects to dicts for the prompt
-    task_list = [{"title": t.title, "priority": t.priority,
-                  "status": t.status, "dueDate": t.dueDate} for t in tasks]
+    task_list = [{
+        "id": t.id,
+        "title": t.title,
+        "priority": t.priority,
+        "status": t.status,
+        "dueDate": t.dueDate
+    } for t in tasks]
 
     prompt = f"""
 You are an AI project manager. Reorder the following tasks based on urgency, priority, due dates, and current status.
@@ -16,11 +23,13 @@ You are an AI project manager. Reorder the following tasks based on urgency, pri
 Tasks:
 {json.dumps(task_list, indent=2)}
 
-Return ONLY a JSON array of the reordered tasks with a brief reasoning field added. Use this exact format:
-[
-  {{"title": "task name", "priority": "high", "status": "inProgress", "dueDate": null, "reasoning": "brief reason"}},
-  ...
-]
+Return ONLY a JSON object with a single key "tasks" that contains the reordered tasks with a brief reasoning field added. Use this exact format:
+{{
+        "tasks": [
+        {{"id": "task_id", "title": "task name", "priority": "high", "status": "inProgress", "dueDate": null, "reasoning": "brief reason"}},
+        ...
+    ]
+}}
 
 Rules:
 - Prioritize tasks that are inProgress over todo
@@ -29,6 +38,7 @@ Rules:
 - Return valid JSON only, no extra text
 """
 
+    client = _get_client()
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
@@ -44,13 +54,9 @@ Rules:
     # Parse JSON response
     try:
         result = json.loads(response_text)
-        # If the response is wrapped in an object, extract the array
         if isinstance(result, dict) and "tasks" in result:
             return result["tasks"]
-        elif isinstance(result, list):
-            return result
-        else:
-            return result
+        return result
     except json.JSONDecodeError:
         # Fallback: return original task order if parsing fails
         return task_list

@@ -2,7 +2,9 @@ from groq import Groq
 import os
 import json
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+def _get_client():
+    return Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def project_manager_agent(state):
@@ -50,6 +52,7 @@ Focus on:
 """
 
     try:
+        client = _get_client()
         res = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
@@ -61,14 +64,4 @@ Focus on:
         result = json.loads(res.choices[0].message.content)
         return json.dumps(result)  # Return as JSON string for graph state
     except Exception as e:
-        # Fallback response
-        return json.dumps({
-            "overall_health": "UNKNOWN",
-            "key_insights": ["AI analysis unavailable"],
-            "priority_actions": ["Review task status", "Update priorities"],
-            "resource_recommendations": ["Ensure adequate resources"],
-            "timeline_concerns": "Unable to analyze",
-            "success_probability": 0.5,
-            "next_steps": ["Continue monitoring progress"],
-            "error": str(e)
-        })
+        raise RuntimeError(f"Project manager analysis failed: {e}")

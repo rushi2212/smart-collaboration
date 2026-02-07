@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import socket from "../socket/socket";
 import KanbanBoard from "../components/KanbanBoard";
-import { getTasks, createTask } from "../api/task.api";
+import { getTasks, createTask, updateTaskPriority } from "../api/task.api";
 import { getMessages, sendMessage as sendMessageAPI } from "../api/chat.api";
 import { prioritizeTasks, agenticAnalysis } from "../api/ai.api";
 import Navbar from "../components/Navbar";
@@ -12,6 +12,7 @@ export default function Project() {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
@@ -54,9 +55,10 @@ export default function Project() {
       title,
       projectId,
       status: "todo",
-      priority: "medium",
+      dueDate: dueDate || undefined,
     });
     setTitle("");
+    setDueDate("");
   };
 
   const sendMessage = async () => {
@@ -80,12 +82,58 @@ export default function Project() {
 
     setAiLoading(true);
     setShowAiPanel(true);
+    setAiResult(null);
     try {
-      const result = await prioritizeTasks(tasks);
+      const aiPayload = tasks.map((task) => ({
+        id: task._id,
+        title: task.title,
+        status: task.status,
+        priority: task.priority || null,
+        dueDate: task.dueDate || null,
+      }));
+
+      const result = await prioritizeTasks(aiPayload);
+      const responsePayload = result.result || result;
+      const prioritizedList = Array.isArray(responsePayload)
+        ? responsePayload
+        : Array.isArray(responsePayload?.tasks)
+          ? responsePayload.tasks
+          : Array.isArray(result.tasks)
+            ? result.tasks
+            : [];
+
+      const priorityById = new Map(
+        prioritizedList
+          .filter((task) => task.id)
+          .map((task) => [task.id, task.priority || null]),
+      );
+
+      const updatedTasks = tasks.map((task) =>
+        priorityById.has(task._id)
+          ? { ...task, priority: priorityById.get(task._id) }
+          : task,
+      );
+
+      const orderedIds = prioritizedList.map((task) => task.id).filter(Boolean);
+      const orderedTasks = orderedIds
+        .map((id) => updatedTasks.find((task) => task._id === id))
+        .filter(Boolean);
+      const remainingTasks = updatedTasks.filter(
+        (task) => !orderedIds.includes(task._id),
+      );
+
+      setTasks([...orderedTasks, ...remainingTasks]);
+      await Promise.all(
+        prioritizedList
+          .filter((task) => task.id && task.priority)
+          .map((task) => updateTaskPriority(task.id, task.priority)),
+      );
+
       setAiResult({ type: "prioritize", data: result });
     } catch (error) {
       console.error("Error with AI prioritization:", error);
       alert("Failed to get AI prioritization");
+      setAiResult({ type: "error", message: "AI prioritization failed." });
     } finally {
       setAiLoading(false);
     }
@@ -99,12 +147,14 @@ export default function Project() {
 
     setAiLoading(true);
     setShowAiPanel(true);
+    setAiResult(null);
     try {
       const result = await agenticAnalysis(tasks);
       setAiResult({ type: "agentic", data: result });
     } catch (error) {
       console.error("Error with AI analysis:", error);
       alert("Failed to get AI analysis");
+      setAiResult({ type: "error", message: "AI analysis failed." });
     } finally {
       setAiLoading(false);
     }
@@ -254,6 +304,13 @@ export default function Project() {
               </div>
             ) : aiResult ? (
               <div className="space-y-4">
+                {aiResult.type === "error" ? (
+                  <div className="bg-white rounded-lg p-4 border border-red-200">
+                    <p className="text-sm text-red-700 font-semibold">
+                      {aiResult.message}
+                    </p>
+                  </div>
+                ) : null}
                 {aiResult.type === "prioritize" ? (
                   <div>
                     <h3 className="font-semibold text-lg text-gray-900 mb-3">
@@ -277,10 +334,12 @@ export default function Project() {
                                       ? "bg-red-100 text-red-800"
                                       : task.priority === "medium"
                                         ? "bg-yellow-100 text-yellow-800"
-                                        : "bg-blue-100 text-blue-800"
+                                        : task.priority === "low"
+                                          ? "bg-blue-100 text-blue-800"
+                                          : "bg-gray-100 text-gray-700"
                                   }`}
                                 >
-                                  {task.priority}
+                                  {task.priority || "unassigned"}
                                 </span>
                               </div>
                               {task.reasoning && (
@@ -555,6 +614,13 @@ export default function Project() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && addTask()}
+            />
+            <input
+              type="date"
+              className="px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 outline-none text-gray-700"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              title="Due date"
             />
             <button
               onClick={addTask}

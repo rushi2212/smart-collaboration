@@ -26,6 +26,12 @@ export const addMember = async (req, res) => {
     if (!workspace)
       return res.status(404).json({ message: "Workspace not found" });
 
+    if (workspace.owner.toString() !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Only the owner can add members" });
+    }
+
     // Check if user is already a member (compare ObjectIds as strings)
     const isMember = workspace.members.some(
       (memberId) => memberId.toString() === req.body.userId,
@@ -35,6 +41,44 @@ export const addMember = async (req, res) => {
       workspace.members.push(req.body.userId);
       await workspace.save();
     }
+
+    await workspace.populate([
+      { path: "owner", select: "name email" },
+      { path: "members", select: "_id name email" },
+    ]);
+
+    res.json(workspace);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const removeMember = async (req, res) => {
+  try {
+    const workspace = await Workspace.findById(req.params.id);
+
+    if (!workspace)
+      return res.status(404).json({ message: "Workspace not found" });
+
+    if (workspace.owner.toString() !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Only the owner can remove members" });
+    }
+
+    if (workspace.owner.toString() === req.params.memberId) {
+      return res.status(400).json({ message: "Owner cannot be removed" });
+    }
+
+    workspace.members = workspace.members.filter(
+      (memberId) => memberId.toString() !== req.params.memberId,
+    );
+    await workspace.save();
+
+    await workspace.populate([
+      { path: "owner", select: "name email" },
+      { path: "members", select: "_id name email" },
+    ]);
 
     res.json(workspace);
   } catch (error) {
