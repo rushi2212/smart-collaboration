@@ -161,24 +161,24 @@ export default function Project() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header with AI Buttons */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 sm:mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
               Project Board
             </h1>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-base sm:text-lg">
               Manage tasks and collaborate with your team
             </p>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <button
               onClick={() => navigate(`/meeting/${projectId}`)}
-              className="bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2"
             >
               <svg
                 className="w-5 h-5"
@@ -198,7 +198,7 @@ export default function Project() {
             <button
               onClick={handlePrioritizeTasks}
               disabled={aiLoading}
-              className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg
                 className="w-5 h-5"
@@ -218,7 +218,7 @@ export default function Project() {
             <button
               onClick={handleAgenticAnalysis}
               disabled={aiLoading}
-              className="bg-linear-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg
                 className="w-5 h-5"
@@ -240,11 +240,11 @@ export default function Project() {
 
         {/* AI Results Panel */}
         {showAiPanel && (
-          <div className="bg-linear-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl shadow-lg p-6 mb-8">
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900 flex items-center">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center">
                 <svg
-                  className="w-6 h-6 mr-2 text-purple-600"
+                  className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-purple-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -256,14 +256,15 @@ export default function Project() {
                     d="M13 10V3L4 14h7v7l9-11h-7z"
                   />
                 </svg>
-                AI Insights
+                <span className="hidden sm:inline">AI Insights</span>
+                <span className="sm:hidden">AI</span>
               </h2>
               <button
                 onClick={() => setShowAiPanel(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5 sm:w-6 sm:h-6"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -590,8 +591,8 @@ export default function Project() {
         )}
 
         {/* Task Creation */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 border border-gray-200">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <svg
               className="w-5 h-5 mr-2 text-blue-600"
               fill="none"
@@ -607,7 +608,7 @@ export default function Project() {
             </svg>
             Add New Task
           </h2>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 outline-none"
               placeholder="Enter task title..."
@@ -617,14 +618,14 @@ export default function Project() {
             />
             <input
               type="date"
-              className="px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 outline-none text-gray-700"
+              className="w-full sm:w-auto px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 outline-none text-gray-700"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               title="Due date"
             />
             <button
               onClick={addTask}
-              className="bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2"
+              className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-6 sm:px-8 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
             >
               <svg
                 className="w-5 h-5"
@@ -648,11 +649,11 @@ export default function Project() {
         <KanbanBoard tasks={tasks} />
 
         {/* Chat Section */}
-        <div className="mt-8 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="bg-linear-to-r from-emerald-500 to-teal-600 px-6 py-4">
-            <h2 className="text-xl font-bold text-white flex items-center">
+        <div className="mt-6 sm:mt-8 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-4 sm:px-6 py-3 sm:py-4">
+            <h2 className="text-base sm:text-xl font-bold text-white flex items-center">
               <svg
-                className="w-6 h-6 mr-2"
+                className="w-5 h-5 sm:w-6 sm:h-6 mr-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -668,24 +669,28 @@ export default function Project() {
             </h2>
           </div>
 
-          <div className="p-6">
-            <div className="bg-gray-50 rounded-lg h-64 p-4 overflow-y-auto mb-4 space-y-3">
+          <div className="p-4 sm:p-6">
+            <div className="bg-gray-50 rounded-lg h-64 sm:h-80 p-3 sm:p-4 overflow-y-auto mb-4 space-y-2 sm:space-y-3">
               {messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-gray-400">
-                  <p>No messages yet. Start the conversation!</p>
+                  <p className="text-sm sm:text-base">
+                    No messages yet. Start the conversation!
+                  </p>
                 </div>
               ) : (
                 messages.map((m, i) => (
                   <div
                     key={m._id || i}
-                    className="bg-white rounded-lg px-4 py-3 shadow-sm border border-gray-200"
+                    className="bg-white rounded-lg px-3 sm:px-4 py-2 sm:py-3 shadow-sm border border-gray-200"
                   >
                     {m.sender && (
                       <p className="text-xs font-semibold text-blue-600 mb-1">
                         {m.sender.name || "Unknown User"}
                       </p>
                     )}
-                    <p className="text-gray-800">{m.content}</p>
+                    <p className="text-sm sm:text-base text-gray-800 break-words">
+                      {m.content}
+                    </p>
                     {m.createdAt && (
                       <p className="text-xs text-gray-400 mt-1">
                         {new Date(m.createdAt).toLocaleTimeString()}
@@ -695,9 +700,9 @@ export default function Project() {
                 ))
               )}
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3">
               <input
-                className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all duration-200 outline-none"
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all duration-200 outline-none text-sm sm:text-base"
                 placeholder="Type your message..."
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -705,7 +710,7 @@ export default function Project() {
               />
               <button
                 onClick={sendMessage}
-                className="bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold px-4 sm:px-8 py-2 sm:py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
               >
                 <svg
                   className="w-5 h-5"
@@ -720,7 +725,7 @@ export default function Project() {
                     d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
                   />
                 </svg>
-                <span>Send</span>
+                <span className="hidden sm:inline">Send</span>
               </button>
             </div>
           </div>

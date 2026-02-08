@@ -2,7 +2,7 @@ import KanbanColumn from "./KanbanColumn";
 
 export default function KanbanBoard({ tasks, moveTask }) {
   return (
-    <div className="flex gap-6 overflow-x-auto overflow-y-visible pb-4">
+    <div className="flex flex-col md:flex-row gap-4 sm:gap-6 overflow-x-auto scrollbar-thin pb-4">
       <KanbanColumn
         title="Todo"
         tasks={tasks.filter((t) => t.status === "todo")}

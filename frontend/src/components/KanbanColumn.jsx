@@ -8,19 +8,21 @@ export default function KanbanColumn({ title, tasks, onMove }) {
   };
 
   return (
-    <div className="flex-1 min-w-75">
+    <div className="flex-1 min-w-[280px] md:min-w-[300px]">
       <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible">
         <div
-          className={`bg-linear-to-r ${statusColors[title] || "from-gray-500 to-gray-600"} px-4 py-3`}
+          className={`bg-gradient-to-r ${statusColors[title] || "from-gray-500 to-gray-600"} px-4 py-3`}
         >
           <div className="flex items-center justify-between">
-            <h2 className="font-bold text-white text-lg">{title}</h2>
-            <span className="bg-white/30 backdrop-blur-sm text-white text-sm font-semibold px-3 py-1 rounded-full">
+            <h2 className="font-bold text-white text-base sm:text-lg">
+              {title}
+            </h2>
+            <span className="bg-white/30 backdrop-blur-sm text-white text-xs sm:text-sm font-semibold px-2 sm:px-3 py-1 rounded-full">
               {tasks.length}
             </span>
           </div>
         </div>
-        <div className="p-4 bg-gray-50 min-h-100 space-y-3">
+        <div className="p-3 sm:p-4 bg-gray-50 min-h-[400px] space-y-3">
           {tasks.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
               <svg

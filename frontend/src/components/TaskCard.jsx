@@ -56,9 +56,11 @@ export default function TaskCard({ task }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-4 mb-3 border-l-4 border-blue-500 relative">
-      <div className="flex items-start justify-between mb-2">
-        <h3 className="font-semibold text-gray-900 flex-1">{task.title}</h3>
+    <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-3 sm:p-4 mb-3 border-l-4 border-blue-500 relative">
+      <div className="flex items-start justify-between mb-2 gap-2">
+        <h3 className="font-semibold text-sm sm:text-base text-gray-900 flex-1 break-words">
+          {task.title}
+        </h3>
         <button
           onClick={() => setShowMenu(!showMenu)}
           className="text-gray-400 hover:text-gray-600 transition-colors p-1"

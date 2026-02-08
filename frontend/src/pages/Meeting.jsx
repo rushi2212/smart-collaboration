@@ -165,14 +165,14 @@ export default function Meeting() {
   return (
     <div className="h-screen bg-[#202124] flex flex-col overflow-hidden select-none">
       {/* ─── Top Bar ─── */}
-      <div className="h-14 bg-[#202124] border-b border-[#3c4043] flex items-center justify-between px-4 shrink-0 z-20">
-        <div className="flex items-center gap-3">
+      <div className="h-14 bg-[#202124] border-b border-[#3c4043] flex items-center justify-between px-2 sm:px-4 shrink-0 z-20">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => {
               leaveMeeting();
               navigate("/dashboard");
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3c4043] hover:bg-[#4c5053] text-gray-300 hover:text-white transition-colors text-xs font-medium"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg bg-[#3c4043] hover:bg-[#4c5053] text-gray-300 hover:text-white transition-colors text-xs font-medium"
             title="Back to Dashboard"
           >
             <svg
@@ -190,9 +190,9 @@ export default function Meeting() {
             </svg>
             Dashboard
           </button>
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-lg flex items-center justify-center">
             <svg
-              className="w-5 h-5 text-white"
+              className="w-4 h-4 sm:w-5 sm:h-5 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -205,7 +205,7 @@ export default function Meeting() {
               />
             </svg>
           </div>
-          <div>
+          <div className="hidden sm:block">
             <h1 className="text-white text-sm font-medium leading-tight">
               Meeting Room
             </h1>
@@ -216,7 +216,7 @@ export default function Meeting() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-gray-400 text-xs font-mono">
+          <span className="hidden sm:inline text-gray-400 text-xs font-mono">
             {new Date().toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
@@ -229,10 +229,10 @@ export default function Meeting() {
       <div className="flex-1 flex overflow-hidden">
         {/* Video Area */}
         <div className="flex-1 flex flex-col relative">
-          <div className="flex-1 flex p-2 gap-2 overflow-hidden">
+          <div className="flex-1 flex p-1 sm:p-2 gap-1 sm:gap-2 overflow-hidden">
             {/* ─── Spotlight (pinned video) ─── */}
             <div className="flex-1 min-w-0 relative">
-              <div className="absolute inset-0 rounded-xl overflow-hidden bg-[#3c4043]">
+              <div className="absolute inset-0 rounded-lg sm:rounded-xl overflow-hidden bg-[#3c4043]">
                 {pinnedFeed.isLocal ? (
                   <LocalVideo
                     localStream={localStream}
@@ -259,8 +259,8 @@ export default function Meeting() {
                   <PinIcon pinned />
                 </button>
                 {/* Name label */}
-                <div className="absolute bottom-4 left-4 flex items-center gap-2">
-                  <span className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+                <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 flex items-center gap-2">
+                  <span className="bg-black/60 backdrop-blur-sm text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium">
                     {pinnedFeed.isLocal
                       ? `You (${userName})`
                       : pinnedFeed.userName}
@@ -279,8 +279,8 @@ export default function Meeting() {
               </div>
             </div>
 
-            {/* ─── Right Column: Thumbnails + Chat ─── */}
-            <div className="w-60 shrink-0 flex flex-col gap-2 overflow-hidden relative z-20">
+            {/* ─── Right Column: Thumbnails + Chat (Hidden on mobile) ─── */}
+            <div className="hidden md:flex w-60 shrink-0 flex-col gap-2 overflow-hidden relative z-20">
               {/* Thumbnails */}
               <div
                 className={`flex flex-col gap-2 overflow-y-auto py-0.5 pr-0.5 scrollbar-thin ${showChat ? "max-h-[40%]" : "flex-1"}`}
@@ -433,9 +433,9 @@ export default function Meeting() {
 
           {/* ─── Floating Controls Bar ─── */}
           <div
-            className={`absolute bottom-0 left-0 right-0 flex justify-center pb-4 pt-8 bg-linear-to-t from-[#202124]/90 to-transparent transition-opacity duration-300 ${controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            className={`absolute bottom-0 left-0 right-0 flex justify-center pb-3 sm:pb-4 pt-6 sm:pt-8 bg-gradient-to-t from-[#202124]/90 to-transparent transition-opacity duration-300 ${controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           >
-            <div className="flex items-center gap-3 bg-[#303134] rounded-full px-4 py-2 shadow-xl">
+            <div className="flex items-center gap-2 sm:gap-3 bg-[#303134] rounded-full px-3 sm:px-4 py-2 shadow-xl">
               {/* Mic */}
               <ControlButton
                 active={isAudioEnabled}
@@ -443,11 +443,12 @@ export default function Meeting() {
                 title={isAudioEnabled ? "Mute" : "Unmute"}
                 activeColor="bg-[#3c4043]"
                 inactiveColor="bg-red-500"
+                size="small"
               >
                 {isAudioEnabled ? (
-                  <MicIcon size={20} />
+                  <MicIcon size={18} />
                 ) : (
-                  <MicOffIcon size={20} />
+                  <MicOffIcon size={18} />
                 )}
               </ControlButton>
 
@@ -458,11 +459,12 @@ export default function Meeting() {
                 title={isVideoEnabled ? "Turn off camera" : "Turn on camera"}
                 activeColor="bg-[#3c4043]"
                 inactiveColor="bg-red-500"
+                size="small"
               >
                 {isVideoEnabled ? (
-                  <CamIcon size={20} />
+                  <CamIcon size={18} />
                 ) : (
-                  <CamOffIcon size={20} />
+                  <CamOffIcon size={18} />
                 )}
               </ControlButton>
 
@@ -473,11 +475,12 @@ export default function Meeting() {
                 title={isScreenSharing ? "Stop presenting" : "Present now"}
                 activeColor="bg-[#3c4043]"
                 inactiveColor="bg-blue-500"
+                size="small"
               >
-                <ScreenIcon size={20} />
+                <ScreenIcon size={18} />
               </ControlButton>
 
-              <div className="w-px h-8 bg-gray-600 mx-1" />
+              <div className="w-px h-6 sm:h-8 bg-gray-600 mx-0.5 sm:mx-1" />
 
               {/* Chat */}
               <ControlButton
@@ -486,11 +489,12 @@ export default function Meeting() {
                 title="Chat"
                 activeColor="bg-[#3c4043]"
                 inactiveColor="bg-blue-500"
+                size="small"
                 badge={
                   !showChat && chatMessages.length > 0 ? chatMessages.length : 0
                 }
               >
-                <ChatIcon size={20} />
+                <ChatIcon size={18} />
               </ControlButton>
 
               {/* Participants */}
@@ -500,18 +504,19 @@ export default function Meeting() {
                 title="Participants"
                 activeColor="bg-[#3c4043]"
                 inactiveColor="bg-blue-500"
+                size="small"
               >
-                <PeopleIcon size={20} />
+                <PeopleIcon size={18} />
               </ControlButton>
 
-              <div className="w-px h-8 bg-gray-600 mx-1" />
+              <div className="w-px h-6 sm:h-8 bg-gray-600 mx-0.5 sm:mx-1" />
 
               {/* Leave */}
               <button
                 onClick={handleLeaveMeeting}
-                className="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-full transition-colors text-sm font-medium flex items-center gap-2"
+                className="bg-red-500 hover:bg-red-600 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-full transition-colors text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-2"
               >
-                <PhoneIcon size={18} />
+                <PhoneIcon size={16} />
                 <span className="hidden sm:inline">Leave</span>
               </button>
             </div>
@@ -520,7 +525,7 @@ export default function Meeting() {
 
         {/* ─── Participants Sidebar (floating) ─── */}
         {showParticipants && (
-          <div className="w-72 bg-[#292b2e] border-l border-[#3c4043] flex flex-col shrink-0 z-10">
+          <div className="w-full md:w-72 bg-[#292b2e] border-l border-[#3c4043] flex flex-col shrink-0 z-10 absolute md:relative inset-0 md:inset-auto">
             <div className="h-12 border-b border-[#3c4043] flex items-center justify-between px-4 shrink-0">
               <span className="text-white text-sm font-medium">
                 People ({participants.length + 1})
@@ -596,6 +601,106 @@ export default function Meeting() {
                   </button>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* ─── Mobile Chat Overlay ─── */}
+        {showChat && (
+          <div className="md:hidden fixed inset-0 bg-black/50 z-30 flex items-end">
+            <div className="w-full bg-[#292b2e] rounded-t-2xl max-h-[70vh] flex flex-col">
+              {/* Chat Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[#3c4043] shrink-0">
+                <span className="text-white text-sm font-medium">
+                  Meeting Chat
+                </span>
+                <button
+                  onClick={() => setShowChat(false)}
+                  className="text-gray-400 hover:text-white p-1 rounded hover:bg-[#3c4043] transition-colors"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                {chatMessages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500 text-sm text-center">
+                      No messages yet
+                    </p>
+                  </div>
+                ) : (
+                  chatMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex flex-col ${msg.userId === userId ? "items-end" : "items-start"}`}
+                    >
+                      <div
+                        className={`${msg.userId === userId ? "bg-blue-600" : "bg-[#3c4043]"} max-w-[80%] rounded-xl px-3 py-2`}
+                      >
+                        <p className="text-xs text-gray-300 font-medium">
+                          {msg.userId === userId
+                            ? "You"
+                            : msg.userName || "Unknown"}
+                        </p>
+                        <p className="text-white text-sm break-words">
+                          {msg.text}
+                        </p>
+                        <p className="text-[10px] text-gray-400 text-right mt-1">
+                          {new Date(msg.timestamp).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <div ref={chatEndRef} />
+              </div>
+              {/* Input */}
+              <div className="p-3 border-t border-[#3c4043] shrink-0">
+                <form onSubmit={handleSendMessage} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    placeholder="Type a message..."
+                    className="flex-1 bg-[#3c4043] text-white rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-500"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!messageInput.trim()}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:opacity-30 text-white p-2 rounded-full transition-colors"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                      />
+                    </svg>
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         )}
@@ -751,12 +856,14 @@ function ControlButton({
   activeColor,
   inactiveColor,
   badge = 0,
+  size = "normal",
 }) {
+  const padding = size === "small" ? "p-2 sm:p-3" : "p-3";
   return (
     <button
       onClick={onClick}
       title={title}
-      className={`${active ? `${activeColor} hover:bg-[#4a4d51] text-white` : `${inactiveColor} hover:opacity-90 text-white`} p-3 rounded-full transition-colors relative`}
+      className={`${active ? `${activeColor} hover:bg-[#4a4d51] text-white` : `${inactiveColor} hover:opacity-90 text-white`} ${padding} rounded-full transition-colors relative`}
     >
       {children}
       {badge > 0 && (
