@@ -123,18 +123,41 @@ export default function Meeting() {
     const resetTimer = () => {
       setControlsVisible(true);
       clearTimeout(controlsTimerRef.current);
-      controlsTimerRef.current = setTimeout(
-        () => setControlsVisible(false),
-        4000,
+      controlsTimerRef.current = setTimeout(() => {
+        setControlsVisible(false);
+      }, 4000);
+    };
+
+    // Use pointer/touch events so controls can be revealed on mobile.
+    window.addEventListener("pointermove", resetTimer);
+    window.addEventListener("pointerdown", resetTimer);
+    window.addEventListener("touchstart", resetTimer, { passive: true });
+
+    resetTimer();
+
+    return () => {
+      window.removeEventListener("pointermove", resetTimer);
+      window.removeEventListener("pointerdown", resetTimer);
+      window.removeEventListener("touchstart", resetTimer);
+      clearTimeout(controlsTimerRef.current);
+    };
+  }, []);
+
+  // Mobile viewport height fix: use the real innerHeight to avoid 100vh issues under mobile browser UI.
+  useEffect(() => {
+    const setAppHeight = () => {
+      document.documentElement.style.setProperty(
+        "--meeting-app-height",
+        `${window.innerHeight}px`,
       );
     };
-    window.addEventListener("mousemove", resetTimer);
-    window.addEventListener("mousedown", resetTimer);
-    resetTimer();
+
+    setAppHeight();
+    window.addEventListener("resize", setAppHeight);
+    window.addEventListener("orientationchange", setAppHeight);
     return () => {
-      window.removeEventListener("mousemove", resetTimer);
-      window.removeEventListener("mousedown", resetTimer);
-      clearTimeout(controlsTimerRef.current);
+      window.removeEventListener("resize", setAppHeight);
+      window.removeEventListener("orientationchange", setAppHeight);
     };
   }, []);
 
@@ -163,9 +186,12 @@ export default function Meeting() {
   };
 
   return (
-    <div className="h-screen bg-[#202124] flex flex-col overflow-hidden select-none">
+    <div
+      style={{ height: "var(--meeting-app-height, 100dvh)" }}
+      className="bg-[#202124] flex flex-col overflow-hidden select-none"
+    >
       {/* ─── Top Bar ─── */}
-      <div className="h-14 bg-[#202124] border-b border-[#3c4043] flex items-center justify-between px-2 sm:px-4 shrink-0 z-20">
+      <div className="h-12 sm:h-14 bg-[#202124] border-b border-[#3c4043] flex items-center justify-between px-2 sm:px-4 shrink-0 z-20">
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => {
@@ -232,7 +258,7 @@ export default function Meeting() {
           <div className="flex-1 flex p-1 sm:p-2 gap-1 sm:gap-2 overflow-hidden">
             {/* ─── Spotlight (pinned video) ─── */}
             <div className="flex-1 min-w-0 relative">
-              <div className="absolute inset-0 rounded-lg sm:rounded-xl overflow-hidden bg-[#3c4043]">
+              <div className="absolute inset-0 rounded-lg sm:rounded-xl overflow-hidden bg-[#3c4043] group">
                 {pinnedFeed.isLocal ? (
                   <LocalVideo
                     localStream={localStream}
@@ -258,6 +284,45 @@ export default function Meeting() {
                 >
                   <PinIcon pinned />
                 </button>
+
+                {/* Mobile thumbnails strip (Meet/Zoom-like) */}
+                {thumbnailFeeds.length > 0 && (
+                  <div className="md:hidden absolute top-2 left-2 right-12 flex gap-2 overflow-x-auto scrollbar-thin">
+                    {thumbnailFeeds.map((feed) => (
+                      <button
+                        key={feed.id}
+                        type="button"
+                        onClick={() => togglePin(feed.id)}
+                        className="relative shrink-0 w-28 aspect-video rounded-lg overflow-hidden bg-[#3c4043] ring-1 ring-transparent active:ring-blue-500"
+                        title="Tap to pin"
+                      >
+                        {feed.isLocal ? (
+                          <LocalVideo
+                            localStream={localStream}
+                            screenStream={screenStream}
+                            userName={userName}
+                            isVideoEnabled={isVideoEnabled}
+                            isScreenSharing={isScreenSharing}
+                            isAudioEnabled={isAudioEnabled}
+                            isBig={false}
+                          />
+                        ) : (
+                          <RemoteVideo
+                            stream={feed.stream}
+                            userName={feed.userName}
+                            isBig={false}
+                          />
+                        )}
+                        <div className="absolute bottom-1 left-1 right-1">
+                          <span className="bg-black/60 backdrop-blur-sm text-white px-1.5 py-0.5 rounded text-[10px] font-medium truncate block">
+                            {feed.isLocal ? "You" : feed.userName}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 {/* Name label */}
                 <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 flex items-center gap-2">
                   <span className="bg-black/60 backdrop-blur-sm text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium">
@@ -433,9 +498,12 @@ export default function Meeting() {
 
           {/* ─── Floating Controls Bar ─── */}
           <div
-            className={`absolute bottom-0 left-0 right-0 flex justify-center pb-3 sm:pb-4 pt-6 sm:pt-8 bg-gradient-to-t from-[#202124]/90 to-transparent transition-opacity duration-300 ${controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            style={{
+              paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)",
+            }}
+            className={`absolute bottom-0 left-0 right-0 flex justify-center pb-2 sm:pb-4 pt-3 sm:pt-8 bg-gradient-to-t from-[#202124]/90 to-transparent transition-opacity duration-300 ${controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           >
-            <div className="flex items-center gap-2 sm:gap-3 bg-[#303134] rounded-full px-3 sm:px-4 py-2 shadow-xl">
+            <div className="flex items-center gap-2 sm:gap-3 bg-[#303134] rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 shadow-xl">
               {/* Mic */}
               <ControlButton
                 active={isAudioEnabled}
@@ -608,7 +676,7 @@ export default function Meeting() {
         {/* ─── Mobile Chat Overlay ─── */}
         {showChat && (
           <div className="md:hidden fixed inset-0 bg-black/50 z-30 flex items-end">
-            <div className="w-full bg-[#292b2e] rounded-t-2xl max-h-[70vh] flex flex-col">
+            <div className="w-full bg-[#292b2e] rounded-t-2xl max-h-[65dvh] flex flex-col">
               {/* Chat Header */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-[#3c4043] shrink-0">
                 <span className="text-white text-sm font-medium">
